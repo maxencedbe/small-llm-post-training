@@ -31,10 +31,21 @@ class EvalArguments:
     max_model_len: int = 4096
     seed: int = 42
     limit: int | None = field(default=None, metadata={"help": "Examples per task, for quick checks only."})
+    wandb_entity: str | None = None
     wandb_project: str = "small-llm-post-training"
 
 
 def main(args: EvalArguments) -> None:
+    # Start the W&B run first: if logging is misconfigured, fail before spending minutes loading the model
+    wandb.init(
+        entity=args.wandb_entity,
+        project=args.wandb_project,
+        name=f"eval-{args.run_name}",
+        job_type="eval",
+        config=vars(args),
+    )
+    wandb_logger = WandbLogger()  # attaches to the run above
+
     # Load the model once with vLLM, then reuse it for every task
     lm = VLLM(
         pretrained=args.model,
@@ -44,9 +55,6 @@ def main(args: EvalArguments) -> None:
         seed=args.seed,
         enable_thinking=args.enable_thinking,
     )
-
-    wandb.init(project=args.wandb_project, name=f"eval-{args.run_name}", job_type="eval", config=vars(args))
-    wandb_logger = WandbLogger()  # attaches to the run above
 
     summary = {}
     for task in args.tasks:

@@ -22,4 +22,5 @@ gpu_memory_utilization: 0.85
 max_model_len: 4096
 seed: 42
 
+wandb_entity: maxence-debes-ml
 wandb_project: small-llm-post-training
