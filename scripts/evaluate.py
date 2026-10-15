@@ -56,6 +56,9 @@ def main(args: EvalArguments) -> None:
         enable_thinking=args.enable_thinking,
     )
 
+    # Each task runs with its own few-shot setting, then all results are merged
+    # and logged to W&B in one go (W&B does not allow overwriting the task configs)
+    merged: dict = {}
     summary = {}
     for task in args.tasks:
         results = simple_evaluate(
@@ -69,15 +72,20 @@ def main(args: EvalArguments) -> None:
             log_samples=True,
             random_seed=args.seed,
         )
-        wandb_logger.post_init(results)
-        wandb_logger.log_eval_result()
-        wandb_logger.log_eval_samples(results["samples"])
+        for key, value in results.items():
+            if isinstance(value, dict):
+                merged.setdefault(key, {}).update(value)
+            else:
+                merged.setdefault(key, value)
 
         scores = results.get("groups", {}).get(task) or results["results"][task]
         for metric, value in scores.items():
             if isinstance(value, float) and "stderr" not in metric:
                 summary[f"{task}/{metric}"] = value
 
+    wandb_logger.post_init(merged)
+    wandb_logger.log_eval_result()
+    wandb_logger.log_eval_samples(merged["samples"])
     wandb.finish()
 
     print(f"\nResults for {args.run_name} ({args.model})")
