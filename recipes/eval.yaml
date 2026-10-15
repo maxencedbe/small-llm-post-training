@@ -1,0 +1,25 @@
+# Evaluation protocol, shared by every model in the project.
+# Do not change it between models: every score in the results table must come from this exact setup.
+
+tasks:
+  - gsm8k
+  - ifeval
+  - mmlu
+
+# Few-shot examples per task (standard values in the literature)
+num_fewshot:
+  gsm8k: 5
+  ifeval: 0
+  mmlu: 5
+
+apply_chat_template: true
+fewshot_as_multiturn: true
+enable_thinking: false   # Qwen3.5 post-trained models can "think" first; disabled for a fair comparison
+
+# vLLM
+dtype: bfloat16
+gpu_memory_utilization: 0.85
+max_model_len: 4096
+seed: 42
+
+wandb_project: small-llm-post-training
