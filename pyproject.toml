@@ -8,3 +8,8 @@ dependencies = [
     "vllm>=0.31.0 ; sys_platform == 'linux'",
     "wandb>=0.30.0",
 ]
+
+[dependency-groups]
+dev = [
+    "modal>=1.6.2",
+]
