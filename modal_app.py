@@ -52,4 +52,5 @@ def run(args: list[str]) -> None:
 def main(*args: str) -> None:
     # The first option picks the GPU, everything else is passed to the script unchanged
     gpu, args = (args[1], args[2:]) if args[:1] == ("--gpu",) else ("L4", args)
-    run.with_options(gpu=gpu).remote(list(args))
+    # spawn() rather than remote(): with --detach, the call keeps running if the laptop disconnects
+    run.with_options(gpu=gpu).spawn(list(args)).get()
