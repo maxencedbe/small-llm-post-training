@@ -12,6 +12,11 @@ num_fewshot:
   ifeval: 0
   mmlu: 5
 
+# Generation length cap per task. lm-eval's default for GSM8K (256 tokens) cuts off
+# about a quarter of the answers of chat models before the final result
+max_gen_toks:
+  gsm8k: 1024
+
 apply_chat_template: true
 fewshot_as_multiturn: true
 enable_thinking: false   # Qwen3.5 post-trained models can "think" first; disabled for a fair comparison

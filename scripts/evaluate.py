@@ -23,6 +23,7 @@ class EvalArguments:
     run_name: str = field(metadata={"help": "Name of the run in W&B, e.g. 'base', 'sft', 'grpo'."})
     tasks: list[str] = field(default_factory=lambda: ["gsm8k", "ifeval", "mmlu"])
     num_fewshot: dict[str, int] = field(default_factory=dict)
+    max_gen_toks: dict[str, int] = field(default_factory=dict, metadata={"help": "Per-task generation length cap."})
     apply_chat_template: bool = True
     fewshot_as_multiturn: bool = True
     enable_thinking: bool = False
@@ -61,13 +62,16 @@ def main(args: EvalArguments) -> None:
     merged: dict = {}
     summary = {}
     for task in args.tasks:
+        gen_kwargs = {"temperature": 0.0, "do_sample": False}  # greedy: same score on every rerun
+        if task in args.max_gen_toks:
+            gen_kwargs["max_gen_toks"] = args.max_gen_toks[task]
         results = simple_evaluate(
             model=lm,
             tasks=[task],
             num_fewshot=args.num_fewshot.get(task),
             apply_chat_template=args.apply_chat_template,
             fewshot_as_multiturn=args.fewshot_as_multiturn,
-            gen_kwargs={"temperature": 0.0, "do_sample": False},  # greedy: same score on every rerun
+            gen_kwargs=gen_kwargs,
             limit=args.limit,
             log_samples=True,
             random_seed=args.seed,
