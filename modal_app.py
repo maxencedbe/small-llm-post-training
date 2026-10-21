@@ -32,15 +32,21 @@ image = (
 
 # Model weights and vLLM/Triton compilation caches, kept between runs
 cache = modal.Volume.from_name("llm-post-training-cache", create_if_missing=True)
+# Trained models, so that later runs (evaluation, DPO, GRPO) can load them
+checkpoints = modal.Volume.from_name("llm-post-training-checkpoints", create_if_missing=True)
 
 app = modal.App("small-llm-post-training", image=image)
 
 
 @app.function(
-    volumes={CACHE_DIR: cache},
+    volumes={CACHE_DIR: cache, f"{PROJECT_DIR}/checkpoints": checkpoints},
     # Set at runtime only, so image builds never write into the volume path.
-    # Hugging Face and vLLM follow XDG_CACHE_HOME; Triton needs its own variable
-    env={"XDG_CACHE_HOME": CACHE_DIR, "TRITON_CACHE_DIR": f"{CACHE_DIR}/triton"},
+    # Hugging Face and vLLM follow XDG_CACHE_HOME; Triton and TileLang (FLA kernels) need their own variables
+    env={
+        "XDG_CACHE_HOME": CACHE_DIR,
+        "TRITON_CACHE_DIR": f"{CACHE_DIR}/triton",
+        "TILELANG_CACHE_DIR": f"{CACHE_DIR}/tilelang",
+    },
     secrets=[modal.Secret.from_name("wandb-secret"), modal.Secret.from_name("huggingface-secret")],
     timeout=TIMEOUT,
 )

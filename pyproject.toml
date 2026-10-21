@@ -3,6 +3,7 @@ name = "llm-post-training"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
+    "flash-linear-attention>=0.5.2 ; sys_platform == 'linux'",
     "lm-eval[ifeval,wandb]>=0.4.13",
     "trl>=1.15.0",
     "vllm>=0.31.0 ; sys_platform == 'linux'",

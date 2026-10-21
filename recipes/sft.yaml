@@ -1,0 +1,37 @@
+# Supervised fine-tuning of Qwen3.5-0.8B-Base on 100k Smol-SmolTalk conversations (full fine-tuning).
+
+# Data
+model_name_or_path: Qwen/Qwen3.5-0.8B-Base
+dataset_name: HuggingFaceTB/smol-smoltalk
+num_train_samples: 100000
+num_eval_samples: 2000      # held-out conversations from the test split, to compare learning rates
+data_seed: 42               # picks the random subset of conversations
+max_length: 2048            # longer conversations (~1%) are dropped, not truncated
+
+# Loss on assistant replies only, with Qwen's template plus {% generation %} markers
+chat_template_path: chat_templates/qwen3_5_training.jinja
+assistant_only_loss: true
+eos_token: <|im_end|>       # end of an assistant turn, as in the official post-trained model
+
+# Optimisation
+num_train_epochs: 1
+learning_rate: 2.0e-5
+lr_scheduler_type: cosine
+warmup_steps: 0.03          # a value below 1 is a fraction of the total steps
+per_device_train_batch_size: 32
+gradient_accumulation_steps: 4    # 32 x 4 = 128 conversations per update
+per_device_eval_batch_size: 32
+bf16: true                  # bf16 compute, fp32 master weights
+gradient_checkpointing: true
+seed: 42
+
+# Logging and saving
+logging_steps: 10
+eval_strategy: steps
+eval_steps: 100
+save_strategy: "no"         # only the final model is saved
+report_to: wandb
+run_name: sft
+output_dir: checkpoints/sft
+wandb_entity: maxence-debes-ml
+wandb_project: small-llm-post-training
