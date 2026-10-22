@@ -6,9 +6,11 @@ Usage:
 """
 
 import os
+import shutil
 from dataclasses import dataclass
 
 from datasets import load_dataset
+from huggingface_hub import hf_hub_download
 from transformers import AutoTokenizer
 from trl import SFTConfig, SFTTrainer, TrlParser
 
@@ -62,6 +64,9 @@ def main(data_args: DataArguments, training_args: SFTConfig) -> None:
     # The training template renders the same text, but ship the original one with the checkpoint
     trainer.processing_class.chat_template = original_chat_template
     trainer.save_model(training_args.output_dir)
+    # vLLM loads Qwen3.5 as a multimodal model and needs its image and video processor configs
+    for name in ("preprocessor_config.json", "video_preprocessor_config.json"):
+        shutil.copy(hf_hub_download(data_args.model_name_or_path, name), training_args.output_dir)
 
 
 if __name__ == "__main__":
