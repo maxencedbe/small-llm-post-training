@@ -47,7 +47,7 @@ def main(script_args: ScriptArguments, training_args: SFTConfig) -> None:
     tokenizer = AutoTokenizer.from_pretrained(script_args.model_name_or_path)
     original_chat_template = tokenizer.chat_template
 
-    split_kwargs = dict(seed=training_args.data_seed, tokenizer=tokenizer, max_length=training_args.max_length)
+    split_kwargs = {"seed": training_args.data_seed, "tokenizer": tokenizer, "max_length": training_args.max_length}
     train_dataset = load_split(script_args, "train", script_args.num_train_samples, **split_kwargs)
     eval_dataset = load_split(script_args, "test", script_args.num_eval_samples, **split_kwargs)
 

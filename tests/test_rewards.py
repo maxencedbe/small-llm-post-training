@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
-from grpo import correctness_reward, format_reward  # noqa: E402
+from grpo import correctness_reward, format_reward
 
 
 def completions(*texts):
