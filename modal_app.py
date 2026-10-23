@@ -26,7 +26,7 @@ image = (
         ".",
         PROJECT_DIR,
         # Mounted at startup, so code changes do not rebuild the image
-        ignore=[".git", ".venv", "checkpoints", "outputs", "wandb", "**/__pycache__", ".DS_Store"],
+        ignore=[".git", ".venv", "checkpoints", "wandb", "**/__pycache__", ".DS_Store"],
     )
 )
 

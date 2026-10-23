@@ -7,7 +7,7 @@ reward: correctness         # "format" for the control run
 
 # GRPO
 num_generations: 8          # completions per problem (the group)
-max_completion_length: 512  # GSM8K answers take ~125 tokens
+max_completion_length: 512  # answers take ~250 tokens in this 0-shot setting
 temperature: 1.0
 beta: 0.0                   # no KL penalty (TRL default)
 loss_type: dapo             # TRL default

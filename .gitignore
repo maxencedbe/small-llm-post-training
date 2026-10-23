@@ -8,7 +8,6 @@ __pycache__/
 
 # Training artifacts
 checkpoints/
-outputs/
 wandb/
 
 # OS

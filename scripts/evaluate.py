@@ -62,7 +62,7 @@ def main(args: EvalArguments) -> None:
     merged: dict = {}
     summary = {}
     for task in args.tasks:
-        gen_kwargs = {"temperature": 0.0, "do_sample": False}  # greedy: same score on every rerun
+        gen_kwargs = {"temperature": 0.0, "do_sample": False}  # greedy decoding
         if task in args.max_gen_toks:
             gen_kwargs["max_gen_toks"] = args.max_gen_toks[task]
         results = simple_evaluate(
