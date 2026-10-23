@@ -16,7 +16,7 @@ from trl import DPOConfig, DPOTrainer, TrlParser
 
 
 @dataclass
-class DataArguments:
+class ScriptArguments:
     model_name_or_path: str = "checkpoints/sft"
     dataset_name: str = "HuggingFaceH4/ultrafeedback_binarized"
     num_eval_samples: int = 2_000
@@ -24,7 +24,7 @@ class DataArguments:
     wandb_project: str = "small-llm-post-training"
 
 
-def load_split(args: DataArguments, split: str, tokenizer, max_length: int):
+def load_split(args: ScriptArguments, split: str, tokenizer, max_length: int):
     """Preference pairs with a real preference, whose prompt and both responses fit in max_length."""
 
     def to_pair(example):
@@ -46,19 +46,19 @@ def load_split(args: DataArguments, split: str, tokenizer, max_length: int):
     return dataset.filter(fits, batched=True)
 
 
-def main(data_args: DataArguments, training_args: DPOConfig) -> None:
-    if data_args.wandb_entity:
-        os.environ.setdefault("WANDB_ENTITY", data_args.wandb_entity)
-    os.environ.setdefault("WANDB_PROJECT", data_args.wandb_project)
+def main(script_args: ScriptArguments, training_args: DPOConfig) -> None:
+    if script_args.wandb_entity:
+        os.environ.setdefault("WANDB_ENTITY", script_args.wandb_entity)
+    os.environ.setdefault("WANDB_PROJECT", script_args.wandb_project)
 
-    tokenizer = AutoTokenizer.from_pretrained(data_args.model_name_or_path)
-    train_dataset = load_split(data_args, "train_prefs", tokenizer, training_args.max_length)
-    eval_dataset = load_split(data_args, "test_prefs", tokenizer, training_args.max_length)
-    eval_dataset = eval_dataset.select(range(min(len(eval_dataset), data_args.num_eval_samples)))
+    tokenizer = AutoTokenizer.from_pretrained(script_args.model_name_or_path)
+    train_dataset = load_split(script_args, "train_prefs", tokenizer, training_args.max_length)
+    eval_dataset = load_split(script_args, "test_prefs", tokenizer, training_args.max_length)
+    eval_dataset = eval_dataset.select(range(min(len(eval_dataset), script_args.num_eval_samples)))
 
     # The reference model is a frozen copy of the starting model, created by the trainer
     trainer = DPOTrainer(
-        model=data_args.model_name_or_path,
+        model=script_args.model_name_or_path,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
@@ -70,10 +70,10 @@ def main(data_args: DataArguments, training_args: DPOConfig) -> None:
     trainer.save_model(training_args.output_dir)
     # vLLM loads Qwen3.5 as a multimodal model and needs its image and video processor configs
     for name in ("preprocessor_config.json", "video_preprocessor_config.json"):
-        shutil.copy(Path(data_args.model_name_or_path) / name, training_args.output_dir)
+        shutil.copy(Path(script_args.model_name_or_path) / name, training_args.output_dir)
 
 
 if __name__ == "__main__":
-    parser = TrlParser((DataArguments, DPOConfig))
-    data_args, training_args = parser.parse_args_and_config()
-    main(data_args, training_args)
+    parser = TrlParser((ScriptArguments, DPOConfig))
+    script_args, training_args = parser.parse_args_and_config()
+    main(script_args, training_args)
