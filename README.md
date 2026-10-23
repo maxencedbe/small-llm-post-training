@@ -2,7 +2,7 @@
 
 A complete post-training pipeline for a small language model, **Qwen3.5-0.8B-Base**, with an evaluation after every stage. The project asks one question about the last stage: **when reinforcement learning with a verifiable reward improves math accuracy, does the gain come from better reasoning or just from a better answer format?**
 
-**Main result.** GRPO with a correctness reward raises GSM8K accuracy from **50.1% to 62.8%** (mean of 3 seeds, ±0.4). A control run rewarded for the answer format alone *loses* 6.7 points. Since the starting model already used the expected format in 99% of its answers, the gain comes from more accurate reasoning, not from formatting.
+**Main result.** GRPO with a correctness reward raises GSM8K accuracy from **50.1% to 62.8%** (mean of 3 seeds, ±0.4). A control run rewarded for the answer format alone *loses* 6.7 points. Since the model already used the expected format in 99% of its answers before GRPO, the gain comes from more accurate reasoning, not from formatting.
 
 Training curves and results: [W&B report](https://forge.coreweave.com/wandb/maxence-debes-ml/small-llm-post-training/reports/Small-LLM-post-training-SFT-DPO-GRPO-on-Qwen3-5-0-8B--VmlldzoxODE2OTY0OQ?accessToken=r5riquti027x2maufd2wa9tjrjqrbsqv9qhnmgoarpk8q4dqnxk8hlxoa84aga12)
 
@@ -58,7 +58,7 @@ SFT and DPO follow the recipe used for SmolLM2 (SFT on Smol-SmolTalk, then DPO o
 A few details that mattered:
 
 - **Chat template for SFT.** TRL needs `{% generation %}` markers to compute the loss on assistant tokens only, and Qwen's template has none. `chat_templates/qwen3_5_training.jinja` adds them and nothing else; a test checks that it renders the exact same text as the original.
-- **Shared answer parser.** The GRPO reward extracts the answer with the same regular expression as lm-eval's strict GSM8K metric, so the model is rewarded on exactly what it is graded on.
+- **Shared answer pattern.** The GRPO reward extracts the answer with the same regular expression as lm-eval's strict GSM8K metric, so the model is rewarded on what it is graded on. (The reward reads the last `####` line and the metric the first; no evaluated answer contains more than one.)
 - **Speed.** Installing [flash-linear-attention](https://github.com/fla-org/flash-linear-attention) halved the SFT step time, since transformers otherwise falls back to a pure PyTorch implementation of the Gated DeltaNet layers.
 
 ## Evaluation
@@ -74,7 +74,7 @@ A few details that mattered:
 Two pitfalls found while setting it up:
 
 - **The default 256-token cap of lm-eval's GSM8K task cut off a quarter of the answers** of both starting models before their final result. At 1,024 tokens, only 2.8% still hit the cap, and almost all of them are repetition loops.
-- **The chat template lowers the base model's MMLU score**: 47.0 here against 50.3 reported in a base-model setting by [dQwen3.5](https://arxiv.org/abs/2609.20751). This choice is applied to every model; it explains why MMLU rises after SFT.
+- **The chat template lowers the base model's MMLU score**: 47.0 here against 50.3 reported in a base-model setting by [dQwen3.5](https://arxiv.org/abs/2609.20751). This choice is applied to every model, and likely explains why MMLU rises after SFT.
 
 Sanity check: the official post-trained model scores 52.3 on IFEval here, against 52.1 on its [model card](https://huggingface.co/Qwen/Qwen3.5-0.8B).
 
@@ -82,7 +82,7 @@ Sanity check: the official post-trained model scores 52.3 on IFEval here, agains
 
 - **One seed for SFT and DPO**, three for GRPO. Differences of about 1 point are within noise.
 - **Off-policy preference data.** UltraFeedback responses were written by other, larger models; pairs sampled from the model itself would likely help DPO more.
-- **One reasoning benchmark.** The GRPO gain is measured on GSM8K only, the task it was trained on (on the test split).
+- **One reasoning benchmark.** The GRPO gain is measured on GSM8K only: trained on its train split, evaluated on its test split. Transfer to other math benchmarks is not measured.
 - **Train/eval prompt mismatch.** GRPO trains with a 0-shot prompt; evaluation uses 5 few-shot examples. The gain transfers, but the model is not evaluated in the setting it was trained in.
 
 ## Reproducing
