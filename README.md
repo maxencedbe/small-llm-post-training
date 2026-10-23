@@ -23,7 +23,7 @@ Re-running the same evaluation twice moves generative scores by about 1 point, s
 
 ## Findings
 
-**1. GRPO improves reasoning, not format.** With a binary correctness reward, GSM8K rises by 12.6 points, and the three seeds agree within 0.9 point. The format-only control (reward 1 for any `#### <number>` line, right or wrong) saturates at 100% within the first quarter of training: from then on it carries no learning signal, its answers drift longer during training (from 230 to 490 tokens), and GSM8K drops by 6.7 points. On individual questions, GRPO mostly fixes answers where the DPO model skipped part of the problem:
+**1. GRPO improves reasoning, not format.** With a binary correctness reward, GSM8K rises by 12.6 points, and the three seeds agree within 0.9 point. The format-only control (reward 1 for any `#### <number>` line, right or wrong) saturates at 100% within the first quarter of training: from then on it carries no learning signal, its answers drift longer during training (from 230 to 490 tokens), and GSM8K drops by 6.7 points. In the answers we read, GRPO typically fixes cases where the DPO model skipped part of the problem:
 
 > *Eliza earns $10/hour for 40 hours and 1.2× that for overtime; she worked 45 hours.*
 > DPO adds the overtime rate once: 400 + 12 = **412** ✗. GRPO: "she worked for 5 hours (45 − 40 = 5), her overtime pay is 12 × 5 = $60", 400 + 60 = **460** ✓.
@@ -36,7 +36,7 @@ Overall, GRPO fixes 262 answers and breaks 101 (seed 42). Its answers are slight
 
 **4. Side effects of GRPO.** IFEval drops by about 2.7 points after GRPO, in the format-only control as well: the cost comes from training on math alone, not from the correctness reward. MMLU stays flat, so no knowledge is forgotten.
 
-**5. The model beats the official post-trained version on math, not on instructions.** After GRPO, it scores 62.8 on GSM8K against 49.7 for Qwen's own post-trained model (with thinking disabled), but stays 10 points behind it on IFEval.
+**5. The model beats the official post-trained version on math, not on instructions.** After GRPO, it scores 62.8 on GSM8K against 49.7 (flexible score) for Qwen's own post-trained model with thinking disabled, but stays 6 to 11 points behind it on IFEval.
 
 ## Method
 
