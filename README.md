@@ -46,9 +46,15 @@ A control run checks that the gain needs the correctness signal. It rewards any 
 
 GRPO trains on math only, and IFEval drops by about 2.7 points, in the control run as well. MMLU does not move.
 
-### Compared with the official post-trained model
+### About the reference model
 
-After GRPO, the model is ahead of Qwen's own post-trained Qwen3.5-0.8B (thinking disabled) on GSM8K, 62.8 against 49.7 (flexible score), but 6 to 11 points behind it on IFEval, which Qwen's broader post-training covers better. Its low strict GSM8K score (33.7) comes from the format: it ends only 62% of its answers with `#### <number>`.
+The official post-trained Qwen3.5-0.8B is shown for scale and as a check of the protocol (its IFEval score matches its model card, see [Evaluation](#evaluation)). It is not a fair head-to-head comparison:
+
+- **Specialist vs generalist.** Our GRPO stage trains on GSM8K itself, while Qwen's post-training covers many tasks at once.
+- **Thinking disabled.** Qwen3.5 is designed to reason before answering; its model card reports much higher scores in thinking mode (e.g. 59.5 vs 48.5 on MMLU-Redux). For a uniform protocol, we evaluate every model without it, which is not the reference's strongest setting on math.
+- **Answer format.** The reference ends only 62% of its GSM8K answers with `#### <number>`, hence its low strict score (33.7); its flexible score (49.7) is the fairer number.
+
+On IFEval, the reference stays 6 to 11 points ahead, which reflects a much larger instruction-tuning effort than our 100k conversations and 54k preference pairs. Its lower MMLU score is not interpreted: MMLU is scored on the probability of answering with a letter right away, a setting that may not suit a model trained to reason first.
 
 ## Method
 
