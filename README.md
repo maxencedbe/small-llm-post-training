@@ -69,7 +69,7 @@ All stages are **full fine-tuning** with [TRL](https://github.com/huggingface/tr
 |---|---|---|---|
 | SFT | [Smol-SmolTalk](https://huggingface.co/datasets/HuggingFaceTB/smol-smoltalk): 100k random conversations, longer ones (>2,048 tokens, ~1%) dropped | 1 epoch, lr 2e-5 (best held-out loss in a 1e-5 / 2e-5 / 5e-5 sweep), cosine schedule, batch 128, loss on assistant tokens only | H100, 98 min |
 | DPO | [UltraFeedback binarized](https://huggingface.co/datasets/HuggingFaceH4/ultrafeedback_binarized): 53.6k pairs (12% ties dropped) | standard sigmoid loss, β = 0.1, lr 5e-7, 1 epoch, batch 128 | H100, 108 min |
-| GRPO | [GSM8K](https://huggingface.co/datasets/openai/gsm8k) train split (7,473 problems), 0-shot prompt asking for a final `#### <number>` line | 8 completions per problem, 128 completions per update, 1 epoch (467 updates), lr 1e-6, no KL penalty, TRL's default `dapo` loss, generation with vLLM on the same GPU | H100, ~1 h per run |
+| GRPO | [GSM8K](https://huggingface.co/datasets/openai/gsm8k) train split (7,473 problems), 0-shot prompt asking for a final `#### <number>` line | 8 completions per problem, 128 completions per update, 1 epoch (467 updates), constant lr 1e-6 after a 5% warmup, no KL penalty, TRL's default `dapo` loss, generation with vLLM on the same GPU | H100, ~1 h per run |
 
 SFT and DPO follow the recipe used for SmolLM2 (SFT on Smol-SmolTalk, then DPO on UltraFeedback). Smol-SmolTalk contains little math, which leaves room for GRPO to improve GSM8K.
 
