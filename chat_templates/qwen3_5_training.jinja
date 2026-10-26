@@ -1,6 +1,7 @@
 {#- Qwen3.5 chat template (Qwen/Qwen3.5-0.8B-Base), unchanged except for {% generation %} markers
     around the assistant output (content, tool calls and <|im_end|>), so that SFT can compute the loss on
-    assistant tokens only. It must render exactly the same text as the original: see tests/test_chat_template.py -#}
+    assistant tokens only. It must render exactly the same text as the original: see tests/test_chat_template.py.
+    Original template by the Qwen team, under the Apache License 2.0. -#}
 {%- set image_count = namespace(value=0) %}
 {%- set video_count = namespace(value=0) %}
 {%- macro render_content(content, do_vision_count, is_system_content=false) %}

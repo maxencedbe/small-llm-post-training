@@ -116,4 +116,4 @@ modal_app.py     runs any script on a Modal GPU, with the environment from uv.lo
 
 ## License
 
-MIT
+MIT. `chat_templates/qwen3_5_training.jinja` is adapted from the Qwen3.5 chat template (Apache License 2.0).
