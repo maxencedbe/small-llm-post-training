@@ -102,6 +102,7 @@ Sanity check: the official post-trained model scores 52.3 on IFEval here, agains
 - **Off-policy preference data.** UltraFeedback responses were written by other, larger models; pairs sampled from the model itself would likely help DPO more.
 - **One math benchmark.** GRPO is trained on the GSM8K train split and evaluated on its test split; transfer to other math benchmarks is not measured.
 - **Train/eval prompt mismatch.** GRPO trains with a 0-shot prompt, while evaluation uses 5 few-shot examples.
+- **No KL penalty in GRPO** (TRL's default). A KL penalty toward the DPO model might reduce the IFEval drop, at the cost of a smaller GSM8K gain; this trade-off is not measured.
 
 ## Reproducing
 
