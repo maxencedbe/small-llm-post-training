@@ -104,33 +104,6 @@ Sanity check: the official post-trained model scores 52.3 on IFEval here, agains
 - **Train/eval prompt mismatch.** GRPO trains with a 0-shot prompt, while evaluation uses 5 few-shot examples.
 - **No KL penalty in GRPO** (TRL's default). A KL penalty toward the DPO model might reduce the IFEval drop, at the cost of a smaller GSM8K gain; this trade-off is not measured.
 
-## Reproducing
-
-Requirements: [uv](https://docs.astral.sh/uv/), a [Modal](https://modal.com) account, and two Modal secrets, `wandb-secret` (`WANDB_API_KEY`) and `huggingface-secret` (`HF_TOKEN`).
-
-```bash
-uv sync
-uv run modal setup
-```
-
-`modal_app.py` runs any script on a Modal GPU with the exact environment from `uv.lock`. Checkpoints are stored in a Modal volume.
-
-```bash
-# Evaluate a model (here the base model)
-uv run modal run --detach modal_app.py --gpu L4 scripts/evaluate.py --config recipes/eval.yaml --model Qwen/Qwen3.5-0.8B-Base --run_name base
-
-# Train each stage
-uv run modal run --detach modal_app.py --gpu H100 scripts/sft.py --config recipes/sft.yaml
-uv run modal run --detach modal_app.py --gpu H100 scripts/dpo.py --config recipes/dpo.yaml
-uv run modal run --detach modal_app.py --gpu H100 scripts/grpo.py --config recipes/grpo.yaml --seed 42
-uv run modal run --detach modal_app.py --gpu H100 scripts/grpo.py --config recipes/grpo.yaml --reward format --run_name grpo-format --output_dir checkpoints/grpo-format
-
-# Evaluate a trained model
-uv run modal run --detach modal_app.py --gpu L4 scripts/evaluate.py --config recipes/eval.yaml --model checkpoints/grpo-seed42 --run_name grpo-seed42
-```
-
-The scripts are plain Python and also run on a local NVIDIA GPU (`python scripts/sft.py --config recipes/sft.yaml`). Tests: `uv run pytest`.
-
 ## Repository layout
 
 ```
@@ -138,7 +111,7 @@ scripts/         evaluate.py, sft.py, dpo.py, grpo.py
 recipes/         one YAML file per stage, with every hyperparameter
 chat_templates/  Qwen3.5 template with {% generation %} markers for SFT
 tests/           chat template and reward tests
-modal_app.py     runs any script on a Modal GPU
+modal_app.py     runs any script on a Modal GPU, with the environment from uv.lock
 ```
 
 ## License
