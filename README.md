@@ -2,7 +2,7 @@
 
 An end-to-end post-training pipeline for a small language model, **Qwen3.5-0.8B-Base**: supervised fine-tuning, then preference optimization (DPO), then reinforcement learning with a verifiable reward (GRPO). Every stage is evaluated with the same protocol, to measure what each one brings.
 
-**In short:** SFT turns the base model into an assistant (+15 points on IFEval), DPO mostly changes the style of its answers, and GRPO raises GSM8K math accuracy from 50.1% to 62.8% (3 seeds).
+**In short:** SFT turns the base model into an assistant (+15 points on IFEval), DPO mostly changes the style of its answers, and GRPO raises GSM8K math accuracy from 50.1% to 62.7% (3 seeds).
 
 Training curves and results: [W&B report](https://forge.coreweave.com/wandb/maxence-debes-ml/small-llm-post-training/reports/Small-LLM-post-training-SFT-DPO-GRPO-on-Qwen3-5-0-8B--VmlldzoxODE2OTY0OQ?accessToken=r5riquti027x2maufd2wa9tjrjqrbsqv9qhnmgoarpk8q4dqnxk8hlxoa84aga12)
 
@@ -15,9 +15,9 @@ Scores in %, all models evaluated with the same fixed protocol (see [Evaluation]
 | Base (Qwen3.5-0.8B-Base) | 16.9 | 52.9 | 30.7 | 42.7 | 32.5 | 44.2 | 47.0 |
 | + SFT | 48.7 | 48.6 | **45.7** | **56.8** | 49.0 | 60.1 | 51.9 |
 | + DPO | 50.1 | 50.1 | 44.0 | 55.3 | 50.3 | 61.4 | **52.4** |
-| **+ GRPO** (mean ± std, 3 seeds) | **62.8 ± 0.4** | **62.8 ± 0.3** | 41.3 ± 1.2 | 54.0 ± 0.9 | **51.0 ± 1.8** | **61.6 ± 1.2** | 52.3 ± 0.1 |
+| **+ GRPO** (mean ± std, 3 seeds) | **62.7 ± 0.4** | **62.8 ± 0.3** | 41.3 ± 1.2 | 54.0 ± 0.9 | **51.0 ± 1.8** | **61.6 ± 1.2** | 52.2 ± 0.1 |
 | *Control: GRPO rewarding only the answer format, not its correctness (1 seed)* | *43.4* | *43.3* | *40.1* | *53.2* | *49.7* | *60.9* | *52.4* |
-| *Reference: Qwen3.5-0.8B (official post-trained)* | *33.7* | *49.7* | *52.3* | *63.6* | *56.8* | *67.9* | *45.3* |
+| *Reference: Qwen3.5-0.8B (official post-trained)* | *33.7* | *49.7* | *52.3* | *63.5* | *56.7* | *67.9* | *45.3* |
 
 Evaluating the same model twice moved generative scores by up to about 1 point, so smaller differences should not be read as real effects.
 
@@ -27,7 +27,7 @@ Evaluating the same model twice moved generative scores by up to about 1 point, 
 
 100k conversations from Smol-SmolTalk turn the base model into an assistant that follows instructions: **IFEval prompt-level accuracy goes from 30.7 to 45.7** (+15 points), the largest IFEval gain of the pipeline.
 
-On GSM8K, the SFT model starts following the format of the 5 few-shot examples in the prompt: 99% of its answers end with `#### <number>`, against 27% for the base model, so the **strict score triples (16.9 → 48.7)**. Its answers are also a third shorter, and flexible accuracy drops by 4.3 points; this is consistent with shorter answers skipping steps, but question difficulty also drives answer length, so the link is not established.
+On GSM8K, the SFT model starts following the format of the 5 few-shot examples in the prompt: 99% of its answers contain the expected `#### <number>` line, against 27% for the base model, so the **strict score triples (16.9 → 48.7)**. Its answers are also a third shorter, and flexible accuracy drops by 4.3 points; this is consistent with shorter answers skipping steps, but question difficulty also drives answer length, so the link is not established.
 
 MMLU rises by 4.9 points. SFT adds no knowledge: the likely reason is that the protocol presents MMLU questions as a conversation, which suits the SFT model better than the base model (see [Evaluation](#evaluation)).
 
@@ -37,12 +37,12 @@ On held-out UltraFeedback pairs, the DPO model gives a higher implicit reward to
 
 ### GRPO: more accurate math reasoning
 
-With a binary reward for a correct final answer, **GSM8K accuracy rises from 50.1 to 62.8**, and the three seeds agree within 0.9 point. During training, the share of correct sampled answers goes from about 43% at the start to 61–78% at the end, depending on the seed. On the test set, GRPO fixes 262 answers and breaks 101 (seed 42); in the answers inspected, it mostly fixes cases where the DPO model skipped part of the problem:
+With a binary reward for a correct final answer, **GSM8K accuracy rises from 50.1 to 62.7**, and the three seeds agree within 0.9 point. During training, the share of correct sampled answers goes from about 40% at the start to 61–78% at the end, depending on the seed. On the test set, GRPO fixes 262 answers and breaks 101 (seed 42); in the answers inspected, it mostly fixes cases where the DPO model skipped part of the problem:
 
 > *Eliza earns $10/hour for 40 hours and 1.2× that for overtime; she worked 45 hours.*
 > DPO adds the overtime rate once: 400 + 12 = **412** ✗. GRPO: "she worked for 5 hours (45 − 40 = 5), her overtime pay is 12 × 5 = $60", 400 + 60 = **460** ✓.
 
-A control run checks that the gain needs the correctness signal. It rewards any answer ending with `#### <number>`, right or wrong. Since the model already used this format in 99% of its answers, the reward reaches 100% within the first quarter of training and stops carrying information. The control ends at 43.4 on GSM8K (−6.7): its answers are shorter than the DPO model's (median 108 vs 125 tokens) and, in the answers inspected, skip steps more often.
+A control run checks that the gain needs the correctness signal. It rewards any answer ending with `#### <number>`, right or wrong. Since the model already used this format in most of its answers (99% in evaluation, 89% at the start of training), the reward reaches 100% within the first quarter of training and stops carrying information. The control ends at 43.4 on GSM8K (−6.7): its answers are shorter than the DPO model's (median 108 vs 125 tokens) and, in the answers inspected, skip steps more often.
 
 GRPO trains on math only, and IFEval drops by about 2.7 points, in the control run as well. MMLU does not move.
 
@@ -91,7 +91,7 @@ A few implementation details:
 
 Two choices worth knowing when reading the scores:
 
-- **GSM8K generation cap.** lm-eval's default of 256 tokens cut off a quarter of the answers of both starting models before their final result. At 1,024 tokens, only 2.8% still hit the cap, and almost all of them are repetition loops.
+- **GSM8K generation cap.** lm-eval's default of 256 tokens cut off a quarter of the answers of both starting models before their final result. At 1,024 tokens, only 2.8% still hit the cap: answers that repeat themselves or go around in circles, not reasoning that needed more room.
 - **Chat template on MMLU.** It likely lowers the base model's score: 47.0 here against 50.3 reported in a base-model setting by [dQwen3.5](https://arxiv.org/abs/2609.20751). The same protocol is applied to every model.
 
 Sanity check: the official post-trained model scores 52.3 on IFEval here, against 52.1 on its [model card](https://huggingface.co/Qwen/Qwen3.5-0.8B).
