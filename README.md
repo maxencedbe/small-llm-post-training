@@ -54,7 +54,7 @@ The official post-trained Qwen3.5-0.8B is shown for scale and as a check of the 
 - **Thinking disabled.** Qwen3.5 is designed to reason before answering; its model card reports much higher scores in thinking mode (e.g. 59.5 vs 48.5 on MMLU-Redux). For a uniform protocol, we evaluate every model without it, which is not the reference's strongest setting on math.
 - **Answer format.** The reference ends only 62% of its GSM8K answers with `#### <number>`, hence its low strict score (33.7); its flexible score (49.7) is the fairer number.
 
-On IFEval, the reference stays 6 to 11 points ahead, which reflects a much larger instruction-tuning effort than our 100k conversations and 54k preference pairs. Its lower MMLU score is not interpreted: MMLU is scored on the probability of answering with a letter right away, a setting that may not suit a model trained to reason first.
+On IFEval, the reference stays 6 to 11 points ahead, which likely reflects a much larger instruction-tuning effort than our 100k conversations and 54k preference pairs. Its lower MMLU score is not interpreted: MMLU is scored on the probability of answering with a letter right away, a setting that may not suit a model trained to reason first.
 
 ## Method
 
