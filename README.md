@@ -19,7 +19,7 @@ Scores in %, all models evaluated with the same fixed protocol (see [Evaluation]
 | *GRPO with a format-only reward (control, 1 seed)* | *43.4* | *43.3* | *40.1* | *53.2* | *49.7* | *60.9* | *52.4* |
 | *Reference: Qwen3.5-0.8B (official post-trained)* | *33.7* | *49.7* | *52.3* | *63.6* | *56.8* | *67.9* | *45.3* |
 
-In our checks, evaluating the same model twice moved generative scores by up to about 1 point, so smaller differences should not be read as real effects.
+Evaluating the same model twice moved generative scores by up to about 1 point, so smaller differences should not be read as real effects.
 
 ## What each stage brings
 
@@ -29,7 +29,7 @@ In our checks, evaluating the same model twice moved generative scores by up to 
 
 On GSM8K, the SFT model starts following the format of the 5 few-shot examples in the prompt: 99% of its answers end with `#### <number>`, against 27% for the base model, so the **strict score triples (16.9 → 48.7)**. Its answers are also a third shorter, and flexible accuracy drops by 4.3 points; this is consistent with shorter answers skipping steps, but question difficulty also drives answer length, so the link is not established.
 
-MMLU rises by 4.9 points. SFT adds no knowledge: the likely reason is that our protocol presents MMLU questions as a conversation, which suits the SFT model better than the base model (see [Evaluation](#evaluation)).
+MMLU rises by 4.9 points. SFT adds no knowledge: the likely reason is that the protocol presents MMLU questions as a conversation, which suits the SFT model better than the base model (see [Evaluation](#evaluation)).
 
 ### DPO: preferences, mostly reflected in style
 
@@ -37,12 +37,12 @@ On held-out UltraFeedback pairs, the DPO model gives a higher implicit reward to
 
 ### GRPO: more accurate math reasoning
 
-With a binary reward for a correct final answer, **GSM8K accuracy rises from 50.1 to 62.8**, and the three seeds agree within 0.9 point. During training, the share of correct sampled answers goes from about 43% at the start to 61–78% at the end, depending on the seed. On the test set, GRPO fixes 262 answers and breaks 101 (seed 42); in the answers we read, it mostly fixes cases where the DPO model skipped part of the problem:
+With a binary reward for a correct final answer, **GSM8K accuracy rises from 50.1 to 62.8**, and the three seeds agree within 0.9 point. During training, the share of correct sampled answers goes from about 43% at the start to 61–78% at the end, depending on the seed. On the test set, GRPO fixes 262 answers and breaks 101 (seed 42); in the answers inspected, it mostly fixes cases where the DPO model skipped part of the problem:
 
 > *Eliza earns $10/hour for 40 hours and 1.2× that for overtime; she worked 45 hours.*
 > DPO adds the overtime rate once: 400 + 12 = **412** ✗. GRPO: "she worked for 5 hours (45 − 40 = 5), her overtime pay is 12 × 5 = $60", 400 + 60 = **460** ✓.
 
-A control run checks that the gain needs the correctness signal. It rewards any answer ending with `#### <number>`, right or wrong. Since the model already used this format in 99% of its answers, the reward reaches 100% within the first quarter of training and stops carrying information. The control ends at 43.4 on GSM8K (−6.7): its answers are shorter than the DPO model's (median 108 vs 125 tokens) and, in the answers we read, skip steps more often.
+A control run checks that the gain needs the correctness signal. It rewards any answer ending with `#### <number>`, right or wrong. Since the model already used this format in 99% of its answers, the reward reaches 100% within the first quarter of training and stops carrying information. The control ends at 43.4 on GSM8K (−6.7): its answers are shorter than the DPO model's (median 108 vs 125 tokens) and, in the answers inspected, skip steps more often.
 
 GRPO trains on math only, and IFEval drops by about 2.7 points, in the control run as well. MMLU does not move.
 
@@ -50,11 +50,11 @@ GRPO trains on math only, and IFEval drops by about 2.7 points, in the control r
 
 The official post-trained Qwen3.5-0.8B is shown for scale and as a check of the protocol (its IFEval score matches its model card, see [Evaluation](#evaluation)). It is not a fair head-to-head comparison:
 
-- **Specialist vs generalist.** Our GRPO stage trains on GSM8K itself, while Qwen's post-training covers many tasks at once.
-- **Thinking disabled.** Qwen3.5 is designed to reason before answering; its model card reports much higher scores in thinking mode (e.g. 59.5 vs 48.5 on MMLU-Redux). For a uniform protocol, we evaluate every model without it, which is not the reference's strongest setting on math.
+- **Specialist vs generalist.** The GRPO stage of this project trains on GSM8K itself, while Qwen's post-training covers many tasks at once.
+- **Thinking disabled.** Qwen3.5 is designed to reason before answering; its model card reports much higher scores in thinking mode (e.g. 59.5 vs 48.5 on MMLU-Redux). For a uniform protocol, every model is evaluated without it, which is not the reference's strongest setting on math.
 - **Answer format.** The reference ends only 62% of its GSM8K answers with `#### <number>`, hence its low strict score (33.7); its flexible score (49.7) is the fairer number.
 
-On IFEval, the reference stays 6 to 11 points ahead, which likely reflects a much larger instruction-tuning effort than our 100k conversations and 54k preference pairs. Its lower MMLU score is not interpreted: MMLU is scored on the probability of answering with a letter right away, a setting that may not suit a model trained to reason first.
+On IFEval, the reference stays 6 to 11 points ahead, which likely reflects a much larger instruction-tuning effort than the 100k conversations and 54k preference pairs used here. Its lower MMLU score is not interpreted: MMLU is scored on the probability of answering with a letter right away, a setting that may not suit a model trained to reason first.
 
 ## Method
 
