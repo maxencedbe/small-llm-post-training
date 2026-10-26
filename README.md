@@ -16,7 +16,7 @@ Scores in %, all models evaluated with the same fixed protocol (see [Evaluation]
 | + SFT | 48.7 | 48.6 | **45.7** | **56.8** | 49.0 | 60.1 | 51.9 |
 | + DPO | 50.1 | 50.1 | 44.0 | 55.3 | 50.3 | 61.4 | **52.4** |
 | **+ GRPO** (mean ± std, 3 seeds) | **62.8 ± 0.4** | **62.8 ± 0.3** | 41.3 ± 1.2 | 54.0 ± 0.9 | **51.0 ± 1.8** | **61.6 ± 1.2** | 52.3 ± 0.1 |
-| *GRPO with a format-only reward (control, 1 seed)* | *43.4* | *43.3* | *40.1* | *53.2* | *49.7* | *60.9* | *52.4* |
+| *Control: GRPO rewarding only the answer format, not its correctness (1 seed)* | *43.4* | *43.3* | *40.1* | *53.2* | *49.7* | *60.9* | *52.4* |
 | *Reference: Qwen3.5-0.8B (official post-trained)* | *33.7* | *49.7* | *52.3* | *63.6* | *56.8* | *67.9* | *45.3* |
 
 Evaluating the same model twice moved generative scores by up to about 1 point, so smaller differences should not be read as real effects.
